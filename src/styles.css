@@ -563,10 +563,6 @@ select:focus {
   .workspace {
     grid-template-columns: 1fr;
   }
-
-  .preview-panel {
-    order: -1;
-  }
 }
 
 @media (max-width: 640px) {
