@@ -72,13 +72,20 @@ To deploy from GitHub:
 For a repository named `am-i-lost`, the deployed project URL usually looks like:
 
 ```text
-https://tomsh-hr.github.io/am-i-lost/
+https://YOUR_USERNAME.github.io/am-i-lost/
 ```
 
 The GitHub link in `index.html` points to:
 
 ```html
-href="https://github.com/tomsh-hr/am-i-lost"
+href="https://github.com/YOUR_USERNAME/am-i-lost"
+```
+
+This repository is currently configured for:
+
+```text
+https://tomsh-hr.github.io/am-i-lost/
+https://github.com/tomsh-hr/am-i-lost
 ```
 
 ## License
