@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Free QR card and tag generator for returning a lost item."
+    />
+    <title>Am I Lost? - card generator</title>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="site-header">
+        <div>
+          <p class="eyebrow" data-i18n="eyebrow">OPEN-SOURCE PROJECT</p>
+          <h1>Am I Lost?</h1>
+          <p class="intro" data-i18n="intro">
+            Create a printable QR card or tag for a lost item. Your data stays
+            in your browser.
+          </p>
+        </div>
+        <div class="header-actions">
+          <label class="language-field">
+            <span data-i18n="languageLabel">Language</span>
+            <select id="language-select" name="language-select">
+              <option value="en">English</option>
+              <option value="zh">中文</option>
+              <option value="hi">हिन्दी</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="ar">العربية</option>
+              <option value="pt">Português</option>
+              <option value="ru">Русский</option>
+              <option value="de">Deutsch</option>
+              <option value="hr">Hrvatski</option>
+            </select>
+          </label>
+          <a
+            class="github-link"
+            href="https://github.com/tomsh-hr/am-i-lost"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Open GitHub"
+            data-i18n-aria-label="githubAria"
+          >
+            GitHub
+          </a>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <section class="editor-panel" aria-labelledby="editor-title">
+          <div class="section-heading">
+            <p class="step">01</p>
+            <div>
+              <h2 id="editor-title" data-i18n="editorTitle">Enter details</h2>
+              <p data-i18n="editorSubtitle">
+                QR can open email, phone, WhatsApp, or a website.
+              </p>
+            </div>
+          </div>
+
+          <form id="card-form" novalidate>
+            <label class="field">
+              <span data-i18n="titleLabel">Title</span>
+              <input
+                id="card-title"
+                name="card-title"
+                type="text"
+                value="AM I LOST?"
+                maxlength="30"
+              />
+            </label>
+
+            <label class="field">
+              <span data-i18n="kickerLabel">Small label</span>
+              <input
+                id="card-kicker"
+                name="card-kicker"
+                type="text"
+                value="FOUND ITEM"
+                maxlength="28"
+              />
+            </label>
+
+            <label class="field">
+              <span data-i18n="messageLabel">Message</span>
+              <textarea
+                id="card-message"
+                name="card-message"
+                rows="3"
+                maxlength="120"
+              >Found my item? Please contact me.</textarea>
+            </label>
+
+            <div class="field-grid">
+              <label class="field">
+                <span data-i18n="contactTypeLabel">Contact method</span>
+                <select id="contact-type" name="contact-type">
+                  <option value="email">Email</option>
+                  <option value="phone">Phone</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="url">Website</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span id="contact-label">Email address</span>
+                <input
+                  id="contact-value"
+                  name="contact-value"
+                  type="email"
+                  inputmode="email"
+                  placeholder="ime@example.com"
+                  autocomplete="off"
+                  required
+                />
+              </label>
+            </div>
+
+            <label class="field">
+              <span data-i18n="footerLabel">Short thank-you note</span>
+              <input
+                id="card-footer"
+                name="card-footer"
+                type="text"
+                value="Thank you for helping!"
+                maxlength="50"
+              />
+            </label>
+
+            <label class="check-field">
+              <input id="show-qr-context" name="show-qr-context" type="checkbox" />
+              <span data-i18n="showQrContextLabel">
+                Show entered contact below the QR code
+              </span>
+            </label>
+
+            <div class="print-options">
+              <label class="field">
+                <span data-i18n="copyCountLabel">Copies on A4</span>
+                <input
+                  id="copy-count"
+                  name="copy-count"
+                  type="number"
+                  min="1"
+                  max="24"
+                  step="1"
+                  value="1"
+                />
+              </label>
+
+              <label class="check-field">
+                <input id="show-cut-lines" name="show-cut-lines" type="checkbox" />
+                <span data-i18n="showCutLinesLabel">Show cut lines</span>
+              </label>
+
+              <label class="check-field">
+                <input id="safe-margin" name="safe-margin" type="checkbox" checked />
+                <span data-i18n="safeMarginLabel">Leave cutting space</span>
+              </label>
+            </div>
+
+            <p id="form-error" class="form-error" role="alert"></p>
+
+            <div class="privacy-note">
+              <strong data-i18n="privacyTitle">Privacy:</strong>
+              <span data-i18n="privacyText">
+                the contact is encoded directly into the QR code. Anyone who
+                scans it can see it. The app does not send or store the contact
+                on a server.
+              </span>
+            </div>
+
+            <div class="actions">
+              <button id="print-button" class="primary-button" type="button">
+                <span data-i18n="printButton">Print / save PDF</span>
+              </button>
+              <button id="download-png-button" class="secondary-button" type="button">
+                <span data-i18n="downloadPngButton">Download PNG</span>
+              </button>
+              <button id="download-svg-button" class="secondary-button" type="button">
+                <span data-i18n="downloadSvgButton">Download SVG</span>
+              </button>
+              <button id="reset-button" class="secondary-button" type="button">
+                <span data-i18n="resetButton">Reset example</span>
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section class="preview-panel" aria-labelledby="preview-heading">
+          <div class="section-heading">
+            <p class="step">02</p>
+            <div>
+              <h2 id="preview-heading" data-i18n="previewTitle">Card preview</h2>
+              <p id="format-description">Standard size: 85.6 x 54 mm.</p>
+            </div>
+          </div>
+
+          <div
+            class="format-tabs"
+            role="tablist"
+            aria-label="Card size"
+            data-i18n-aria-label="formatTabsAria"
+          >
+            <button
+              id="format-wallet"
+              class="format-tab is-active"
+              type="button"
+              role="tab"
+              aria-selected="true"
+              data-format="wallet"
+            >
+              Wallet Card
+            </button>
+            <button
+              id="format-keychain"
+              class="format-tab"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              data-format="keychain"
+            >
+              Keychain
+            </button>
+            <button
+              id="format-compact"
+              class="format-tab"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              data-format="compact"
+            >
+            Compact
+            </button>
+          </div>
+
+          <div class="size-options">
+            <label class="field">
+              <span data-i18n="widthLabel">Width (mm)</span>
+              <input
+                id="card-width"
+                name="card-width"
+                type="number"
+                min="25"
+                max="120"
+                step="0.1"
+                value="85.6"
+              />
+            </label>
+
+            <label class="field">
+              <span data-i18n="heightLabel">Height (mm)</span>
+              <input
+                id="card-height"
+                name="card-height"
+                type="number"
+                min="25"
+                max="120"
+                step="0.1"
+                value="54"
+              />
+            </label>
+
+            <button id="reset-size-button" class="secondary-button" type="button">
+              <span data-i18n="resetSizeButton">Reset size</span>
+            </button>
+          </div>
+
+          <div class="card-stage">
+            <article
+              id="print-card"
+              class="lost-card format-wallet"
+              style="--card-width: 85.6mm; --card-height: 54mm"
+              aria-label="Card preview"
+              data-i18n-aria-label="previewCardAria"
+            >
+              <div class="card-copy">
+                <p id="preview-kicker" class="card-kicker">FOUND ITEM</p>
+                <h3 id="preview-title">AM I LOST?</h3>
+                <p id="preview-message" class="card-message">
+                  Found my item? Please contact me.
+                </p>
+                <p id="preview-footer" class="card-footer">
+                  Thank you for helping!
+                </p>
+              </div>
+
+              <div class="qr-area">
+                <div class="qr-frame">
+                  <img id="qr-image" alt="Contact QR code" hidden />
+                  <div id="qr-placeholder" class="qr-placeholder">
+                    Enter contact
+                  </div>
+                </div>
+                <p data-i18n="scanMe">SCAN ME</p>
+                <p id="preview-qr-context" class="qr-context" hidden></p>
+              </div>
+            </article>
+          </div>
+
+          <div class="qr-target-check">
+            <span data-i18n="qrTargetLabel">QR target</span>
+            <output id="qr-target-preview" class="qr-target-preview">
+              Enter contact
+            </output>
+          </div>
+
+          <p class="print-tip">
+            <span data-i18n="printTipStart">When printing, choose</span>
+            <strong>100% / Actual size</strong>
+            <span data-i18n="printTipEnd">
+              and turn off “Fit to page”. Test the QR with your phone before
+              cutting.
+            </span>
+          </p>
+        </section>
+      </div>
+    </main>
+    <div id="print-sheet" class="print-sheet" aria-hidden="true"></div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
