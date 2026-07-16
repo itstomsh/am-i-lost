@@ -20,7 +20,6 @@ type StoredState = {
   kicker?: string;
   message?: string;
   footer?: string;
-  showFooterContact?: boolean;
   showQrContext?: boolean;
   contactType?: ContactType;
   contactValue?: string;
@@ -58,7 +57,6 @@ const titleInput = getElement<HTMLInputElement>("card-title");
 const kickerInput = getElement<HTMLInputElement>("card-kicker");
 const messageInput = getElement<HTMLTextAreaElement>("card-message");
 const footerInput = getElement<HTMLInputElement>("card-footer");
-const showFooterContactInput = getElement<HTMLInputElement>("show-footer-contact");
 const showQrContextInput = getElement<HTMLInputElement>("show-qr-context");
 const languageSelect = getElement<HTMLSelectElement>("language-select");
 const contactTypeSelect = getElement<HTMLSelectElement>("contact-type");
@@ -302,16 +300,12 @@ function updateQrTargetPreview(): void {
 function updateTextPreview(): void {
   const contactError = validateContact(getContactType(), contactInput.value);
   const footerText = footerInput.value.trim() || t().fallbackFooter;
-  const readableContact =
-    showFooterContactInput.checked && !contactError
-      ? ` ${t().footerContactPrefix}: ${createContactLabel(getContactType(), contactInput.value)}`
-      : "";
 
   previewKicker.textContent = kickerInput.value.trim() || t().defaultKicker;
   previewTitle.textContent = titleInput.value.trim() || t().defaultTitle;
   previewMessage.textContent =
     messageInput.value.trim() || t().fallbackMessage;
-  previewFooter.textContent = `${footerText}${readableContact}`;
+  previewFooter.textContent = footerText;
   previewQrContext.textContent = createContactLabel(
     getContactType(),
     contactInput.value,
@@ -429,7 +423,6 @@ function saveState(): void {
     kicker: kickerInput.value,
     message: messageInput.value,
     footer: footerInput.value,
-    showFooterContact: showFooterContactInput.checked,
     showQrContext: showQrContextInput.checked,
     contactType: getContactType(),
     contactValue: contactInput.value,
@@ -482,10 +475,6 @@ function loadState(): void {
 
   if (typeof state.footer === "string") {
     footerInput.value = state.footer;
-  }
-
-  if (typeof state.showFooterContact === "boolean") {
-    showFooterContactInput.checked = state.showFooterContact;
   }
 
   if (typeof state.showQrContext === "boolean") {
@@ -674,11 +663,7 @@ function buildCardSvg(qrDataUrl: string): string {
   const message = messageInput.value.trim() || t().fallbackMessage;
   const contactLabel = createContactLabel(getContactType(), contactInput.value);
   const contactError = validateContact(getContactType(), contactInput.value);
-  const footer = `${footerInput.value.trim() || t().fallbackFooter}${
-    showFooterContactInput.checked && !contactError
-      ? ` ${t().footerContactPrefix}: ${contactLabel}`
-      : ""
-  }`;
+  const footer = footerInput.value.trim() || t().fallbackFooter;
   const showContact = showQrContextInput.checked && !contactError;
   const radius = selectedFormat === "keychain" ? 8 : 3.2;
   let content = "";
@@ -913,7 +898,6 @@ function resetForm(): void {
   kickerInput.value = t().defaultKicker;
   messageInput.value = t().defaultMessage;
   footerInput.value = t().defaultFooter;
-  showFooterContactInput.checked = false;
   showQrContextInput.checked = false;
   copyCountInput.value = "1";
   showCutLinesInput.checked = false;
@@ -951,10 +935,6 @@ async function printCard(): Promise<void> {
 });
 
 showQrContextInput.addEventListener("change", () => {
-  updateTextPreview();
-  saveState();
-});
-showFooterContactInput.addEventListener("change", () => {
   updateTextPreview();
   saveState();
 });
