@@ -5,7 +5,7 @@ A privacy-friendly QR card and tag generator for lost items.
 Create printable cards, keychain tags, or compact QR labels that help someone
 contact you when they find your item. Everything runs in the browser.
 
-Use the app: https://tomsh-hr.github.io/am-i-lost/
+Use the app: https://itstomsh.github.io/am-i-lost/
 
 ## Features
 
@@ -84,8 +84,8 @@ href="https://github.com/YOUR_USERNAME/am-i-lost"
 This repository is currently configured for:
 
 ```text
-https://tomsh-hr.github.io/am-i-lost/
-https://github.com/tomsh-hr/am-i-lost
+https://itstomsh.github.io/am-i-lost/
+https://github.com/itstomsh/am-i-lost
 ```
 
 ## License
