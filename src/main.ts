@@ -20,6 +20,7 @@ type StoredState = {
   kicker?: string;
   message?: string;
   footer?: string;
+  showFooterContact?: boolean;
   showQrContext?: boolean;
   contactType?: ContactType;
   contactValue?: string;
@@ -57,6 +58,7 @@ const titleInput = getElement<HTMLInputElement>("card-title");
 const kickerInput = getElement<HTMLInputElement>("card-kicker");
 const messageInput = getElement<HTMLTextAreaElement>("card-message");
 const footerInput = getElement<HTMLInputElement>("card-footer");
+const showFooterContactInput = getElement<HTMLInputElement>("show-footer-contact");
 const showQrContextInput = getElement<HTMLInputElement>("show-qr-context");
 const languageSelect = getElement<HTMLSelectElement>("language-select");
 const contactTypeSelect = getElement<HTMLSelectElement>("contact-type");
@@ -189,6 +191,21 @@ function normalizeUrl(value: string): string {
   return `https://${trimmed}`;
 }
 
+function normalizePhoneForDial(value: string): string {
+  const trimmed = value.trim();
+  const withoutSeparators = trimmed.replace(/[^\d+]/g, "");
+
+  if (withoutSeparators.startsWith("00")) {
+    return `+${withoutSeparators.slice(2)}`;
+  }
+
+  return withoutSeparators;
+}
+
+function normalizePhoneForWhatsapp(value: string): string {
+  return normalizePhoneForDial(value).replace(/\D/g, "");
+}
+
 function createContactUrl(type: ContactType, value: string): string {
   const trimmed = value.trim();
 
@@ -200,10 +217,10 @@ function createContactUrl(type: ContactType, value: string): string {
     }
 
     case "phone":
-      return `tel:${trimmed.replace(/[^+\d]/g, "")}`;
+      return `tel:${normalizePhoneForDial(trimmed)}`;
 
     case "whatsapp": {
-      const number = trimmed.replace(/\D/g, "");
+      const number = normalizePhoneForWhatsapp(trimmed);
       const text = encodeURIComponent(t().whatsappText);
       return `https://wa.me/${number}?text=${text}`;
     }
@@ -221,10 +238,10 @@ function createContactLabel(type: ContactType, value: string): string {
       return trimmed;
 
     case "phone":
-      return trimmed.replace(/[^+\d]/g, "");
+      return normalizePhoneForDial(trimmed);
 
     case "whatsapp":
-      return `WhatsApp ${trimmed.replace(/[^+\d]/g, "")}`;
+      return `WhatsApp ${normalizePhoneForDial(trimmed)}`;
 
     case "url":
       return normalizeUrl(trimmed);
@@ -283,17 +300,24 @@ function updateQrTargetPreview(): void {
 }
 
 function updateTextPreview(): void {
+  const contactError = validateContact(getContactType(), contactInput.value);
+  const footerText = footerInput.value.trim() || t().fallbackFooter;
+  const readableContact =
+    showFooterContactInput.checked && !contactError
+      ? ` ${t().footerContactPrefix}: ${createContactLabel(getContactType(), contactInput.value)}`
+      : "";
+
   previewKicker.textContent = kickerInput.value.trim() || t().defaultKicker;
   previewTitle.textContent = titleInput.value.trim() || t().defaultTitle;
   previewMessage.textContent =
     messageInput.value.trim() || t().fallbackMessage;
-  previewFooter.textContent = footerInput.value.trim() || t().fallbackFooter;
+  previewFooter.textContent = `${footerText}${readableContact}`;
   previewQrContext.textContent = createContactLabel(
     getContactType(),
     contactInput.value,
   );
   previewQrContext.hidden =
-    !showQrContextInput.checked || Boolean(validateContact(getContactType(), contactInput.value));
+    !showQrContextInput.checked || Boolean(contactError);
   updateQrTargetPreview();
 }
 
@@ -405,6 +429,7 @@ function saveState(): void {
     kicker: kickerInput.value,
     message: messageInput.value,
     footer: footerInput.value,
+    showFooterContact: showFooterContactInput.checked,
     showQrContext: showQrContextInput.checked,
     contactType: getContactType(),
     contactValue: contactInput.value,
@@ -457,6 +482,10 @@ function loadState(): void {
 
   if (typeof state.footer === "string") {
     footerInput.value = state.footer;
+  }
+
+  if (typeof state.showFooterContact === "boolean") {
+    showFooterContactInput.checked = state.showFooterContact;
   }
 
   if (typeof state.showQrContext === "boolean") {
@@ -643,9 +672,14 @@ function buildCardSvg(qrDataUrl: string): string {
   const title = titleInput.value.trim() || t().defaultTitle;
   const kicker = kickerInput.value.trim() || t().defaultKicker;
   const message = messageInput.value.trim() || t().fallbackMessage;
-  const footer = footerInput.value.trim() || t().fallbackFooter;
   const contactLabel = createContactLabel(getContactType(), contactInput.value);
-  const showContact = showQrContextInput.checked && !validateContact(getContactType(), contactInput.value);
+  const contactError = validateContact(getContactType(), contactInput.value);
+  const footer = `${footerInput.value.trim() || t().fallbackFooter}${
+    showFooterContactInput.checked && !contactError
+      ? ` ${t().footerContactPrefix}: ${contactLabel}`
+      : ""
+  }`;
+  const showContact = showQrContextInput.checked && !contactError;
   const radius = selectedFormat === "keychain" ? 8 : 3.2;
   let content = "";
 
@@ -879,6 +913,7 @@ function resetForm(): void {
   kickerInput.value = t().defaultKicker;
   messageInput.value = t().defaultMessage;
   footerInput.value = t().defaultFooter;
+  showFooterContactInput.checked = false;
   showQrContextInput.checked = false;
   copyCountInput.value = "1";
   showCutLinesInput.checked = false;
@@ -916,6 +951,10 @@ async function printCard(): Promise<void> {
 });
 
 showQrContextInput.addEventListener("change", () => {
+  updateTextPreview();
+  saveState();
+});
+showFooterContactInput.addEventListener("change", () => {
   updateTextPreview();
   saveState();
 });
