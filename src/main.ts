@@ -26,12 +26,26 @@ type StoredState = {
   copyCount?: number;
   showCutLines?: boolean;
   safeMargin?: boolean;
+  backgroundMode?: BackgroundMode;
+  palette?: PaletteName;
   customMetrics?: Partial<Record<CardFormat, CardMetrics>>;
 };
 
 type CardMetrics = {
   widthMm: number;
   heightMm: number;
+};
+
+type BackgroundMode = "solid" | "transparent";
+type PaletteName = "light" | "dark" | "blue" | "contrast";
+
+type Palette = {
+  cardBackground: string;
+  text: string;
+  muted: string;
+  accent: string;
+  border: string;
+  qrBackground: string;
 };
 
 const fieldConfigs: Record<ContactType, FieldConfig> = {
@@ -65,6 +79,8 @@ const contactLabel = getElement<HTMLElement>("contact-label");
 const qrTargetPreview = getElement<HTMLOutputElement>("qr-target-preview");
 const cardWidthInput = getElement<HTMLInputElement>("card-width");
 const cardHeightInput = getElement<HTMLInputElement>("card-height");
+const backgroundModeSelect = getElement<HTMLSelectElement>("background-mode");
+const paletteSelect = getElement<HTMLSelectElement>("card-palette");
 const copyCountInput = getElement<HTMLInputElement>("copy-count");
 const showCutLinesInput = getElement<HTMLInputElement>("show-cut-lines");
 const safeMarginInput = getElement<HTMLInputElement>("safe-margin");
@@ -80,6 +96,12 @@ const formatDescription = getElement<HTMLElement>("format-description");
 const formatTabs = Array.from(
   document.querySelectorAll<HTMLButtonElement>(".format-tab"),
 );
+const viewTabs = Array.from(
+  document.querySelectorAll<HTMLButtonElement>(".view-tab"),
+);
+const previewView = getElement<HTMLElement>("preview-view");
+const howToView = getElement<HTMLElement>("how-to-view");
+const howToSteps = getElement<HTMLOListElement>("how-to-steps");
 const qrImage = getElement<HTMLImageElement>("qr-image");
 const qrPlaceholder = getElement<HTMLElement>("qr-placeholder");
 const formError = getElement<HTMLElement>("form-error");
@@ -96,6 +118,40 @@ const formatMetrics: Record<CardFormat, CardMetrics> = {
   keychain: { widthMm: 45, heightMm: 32 },
   compact: { widthMm: 38, heightMm: 50 },
 };
+const palettes: Record<PaletteName, Palette> = {
+  light: {
+    cardBackground: "#ffffff",
+    text: "#1f2937",
+    muted: "#667085",
+    accent: "#2563eb",
+    border: "#98a2b3",
+    qrBackground: "#ffffff",
+  },
+  dark: {
+    cardBackground: "#111827",
+    text: "#f9fafb",
+    muted: "#d0d5dd",
+    accent: "#93c5fd",
+    border: "#f9fafb",
+    qrBackground: "#ffffff",
+  },
+  blue: {
+    cardBackground: "#eff6ff",
+    text: "#172554",
+    muted: "#1e3a8a",
+    accent: "#2563eb",
+    border: "#1e40af",
+    qrBackground: "#ffffff",
+  },
+  contrast: {
+    cardBackground: "#ffffff",
+    text: "#000000",
+    muted: "#111111",
+    accent: "#000000",
+    border: "#000000",
+    qrBackground: "#ffffff",
+  },
+};
 const customMetrics: Record<CardFormat, CardMetrics> = {
   wallet: { ...formatMetrics.wallet },
   keychain: { ...formatMetrics.keychain },
@@ -105,6 +161,8 @@ const customMetrics: Record<CardFormat, CardMetrics> = {
 let qrUpdateSequence = 0;
 let currentLanguage: Language = "en";
 let selectedFormat: CardFormat = "wallet";
+let selectedPalette: PaletteName = "light";
+let selectedBackgroundMode: BackgroundMode = "solid";
 
 function t(): (typeof translations)[Language] {
   return translations[currentLanguage];
@@ -134,6 +192,14 @@ function isCardFormat(value: string): value is CardFormat {
 
 function isLanguage(value: string): value is Language {
   return value in translations;
+}
+
+function isBackgroundMode(value: string): value is BackgroundMode {
+  return value === "solid" || value === "transparent";
+}
+
+function isPaletteName(value: string): value is PaletteName {
+  return value === "light" || value === "dark" || value === "blue" || value === "contrast";
 }
 
 function getCopyCount(): number {
@@ -177,6 +243,25 @@ function applyCardMetrics(): void {
   printCardElement.style.setProperty("--card-width", `${metrics.widthMm}mm`);
   printCardElement.style.setProperty("--card-height", `${metrics.heightMm}mm`);
   formatDescription.textContent = `${t().formatDescriptions[selectedFormat]} ${formatMm(metrics.widthMm)} x ${formatMm(metrics.heightMm)} mm.`;
+}
+
+function getCurrentPalette(): Palette {
+  return palettes[selectedPalette];
+}
+
+function applyAppearance(): void {
+  const palette = getCurrentPalette();
+  const background =
+    selectedBackgroundMode === "transparent" ? "transparent" : palette.cardBackground;
+
+  printCardElement.style.setProperty("--card-bg", background);
+  printCardElement.style.setProperty("--card-text", palette.text);
+  printCardElement.style.setProperty("--card-muted", palette.muted);
+  printCardElement.style.setProperty("--card-accent", palette.accent);
+  printCardElement.style.setProperty("--card-border", palette.border);
+  printCardElement.style.setProperty("--qr-bg", palette.qrBackground);
+  backgroundModeSelect.value = selectedBackgroundMode;
+  paletteSelect.value = selectedPalette;
 }
 
 function normalizeUrl(value: string): string {
@@ -373,6 +458,22 @@ function applyTranslations(): void {
     option.textContent = copy.contactOptions[contactType];
   });
 
+  Array.from(backgroundModeSelect.options).forEach((option) => {
+    const mode = option.value;
+
+    if (mode === "solid" || mode === "transparent") {
+      option.textContent = copy.backgroundOptions[mode];
+    }
+  });
+
+  Array.from(paletteSelect.options).forEach((option) => {
+    const palette = option.value;
+
+    if (palette === "light" || palette === "dark" || palette === "blue" || palette === "contrast") {
+      option.textContent = copy.paletteOptions[palette];
+    }
+  });
+
   formatTabs.forEach((tab) => {
     const format = tab.dataset.format;
 
@@ -381,10 +482,30 @@ function applyTranslations(): void {
     }
   });
 
+  howToSteps.replaceChildren(
+    ...copy.howToSteps.map((step) => {
+      const item = document.createElement("li");
+      item.textContent = step;
+      return item;
+    }),
+  );
+
   qrImage.alt = copy.qrAlt;
   languageSelect.value = currentLanguage;
   setCardFormat(selectedFormat);
+  applyAppearance();
   updateContactField(false);
+}
+
+function setPreviewView(view: "preview" | "how-to"): void {
+  previewView.hidden = view !== "preview";
+  howToView.hidden = view !== "how-to";
+
+  viewTabs.forEach((tab) => {
+    const isActive = tab.dataset.view === view;
+    tab.classList.toggle("is-active", isActive);
+    tab.setAttribute("aria-selected", String(isActive));
+  });
 }
 
 function setLanguage(language: Language): void {
@@ -429,6 +550,8 @@ function saveState(): void {
     copyCount: getCopyCount(),
     showCutLines: showCutLinesInput.checked,
     safeMargin: safeMarginInput.checked,
+    backgroundMode: selectedBackgroundMode,
+    palette: selectedPalette,
     customMetrics,
   };
 
@@ -499,6 +622,14 @@ function loadState(): void {
 
   if (typeof state.safeMargin === "boolean") {
     safeMarginInput.checked = state.safeMargin;
+  }
+
+  if (state.backgroundMode && isBackgroundMode(state.backgroundMode)) {
+    selectedBackgroundMode = state.backgroundMode;
+  }
+
+  if (state.palette && isPaletteName(state.palette)) {
+    selectedPalette = state.palette;
   }
 
   if (state.customMetrics) {
@@ -648,6 +779,9 @@ async function getQrDataUrlForExport(): Promise<string | null> {
 
 function buildCardSvg(qrDataUrl: string): string {
   const metrics = getCurrentMetrics();
+  const palette = getCurrentPalette();
+  const cardFill =
+    selectedBackgroundMode === "transparent" ? "none" : palette.cardBackground;
   const baseMetrics = formatMetrics[selectedFormat];
   const width = metrics.widthMm;
   const height = metrics.heightMm;
@@ -672,31 +806,34 @@ function buildCardSvg(qrDataUrl: string): string {
     content += svgText([kicker], 5, 9, {
       size: 2.3,
       weight: 800,
-      color: "#1d4ed8",
+      color: palette.accent,
       letterSpacing: 0.35,
     });
     content += svgText(wrapText(title, 11, 2), 5, 17, {
       size: 7,
       weight: 900,
+      color: palette.text,
       lineHeight: 6.8,
       letterSpacing: -0.25,
     });
     content += svgText(wrapText(message, 28, 3), 5, 30, {
       size: 3.1,
       weight: 500,
+      color: palette.text,
       lineHeight: 4,
     });
     content += svgText(wrapText(footer, 32, 2), 5, 45, {
       size: 2.35,
       weight: 800,
-      color: "#475467",
+      color: palette.muted,
       lineHeight: 3,
     });
-    content += `<rect x="51.6" y="10.5" width="29" height="29" rx="1.6" fill="#fff" stroke="#111827" stroke-width="0.35"/>`;
+    content += `<rect x="51.6" y="10.5" width="29" height="29" rx="1.6" fill="${palette.qrBackground}" stroke="${palette.border}" stroke-width="0.35"/>`;
     content += `<image href="${qrDataUrl}" x="52.35" y="11.25" width="27.5" height="27.5"/>`;
     content += svgText([t().scanMe], 66.1, 44, {
       size: 2.15,
       weight: 900,
+      color: palette.text,
       anchor: "middle",
       letterSpacing: 0.35,
     });
@@ -705,7 +842,7 @@ function buildCardSvg(qrDataUrl: string): string {
       content += svgText(wrapText(contactLabel, 22, 2), 66.1, 49, {
         size: 2.15,
         weight: 750,
-        color: "#475467",
+        color: palette.muted,
         anchor: "middle",
         lineHeight: 2.6,
       });
@@ -716,22 +853,24 @@ function buildCardSvg(qrDataUrl: string): string {
     content += svgText(wrapText(title, 9, 2), 3, 9, {
       size: 4.2,
       weight: 900,
+      color: palette.text,
       lineHeight: 4.3,
       letterSpacing: -0.1,
     });
     content += svgText(wrapText(message, 18, 3), 3, 18, {
       size: 2.05,
       weight: 500,
+      color: palette.text,
       lineHeight: 2.4,
     });
-    content += `<rect x="25" y="6.2" width="17" height="17" rx="1.2" fill="#fff" stroke="#111827" stroke-width="0.35"/>`;
+    content += `<rect x="25" y="6.2" width="17" height="17" rx="1.2" fill="${palette.qrBackground}" stroke="${palette.border}" stroke-width="0.35"/>`;
     content += `<image href="${qrDataUrl}" x="25.5" y="6.7" width="16" height="16"/>`;
 
     if (showContact) {
       content += svgText(wrapText(contactLabel, 14, 2), 33.5, 26.6, {
         size: 1.65,
         weight: 750,
-        color: "#475467",
+        color: palette.muted,
         anchor: "middle",
         lineHeight: 1.9,
       });
@@ -739,21 +878,22 @@ function buildCardSvg(qrDataUrl: string): string {
   }
 
   if (selectedFormat === "compact") {
-    content += svgText(wrapText(title, 14, 2), width / 2, 8, {
+    content += svgText(wrapText(title, 14, 2), layoutWidth / 2, 8, {
       size: 4.7,
       weight: 900,
+      color: palette.text,
       anchor: "middle",
       lineHeight: 5,
       letterSpacing: -0.1,
     });
-    content += `<rect x="4.5" y="14" width="29" height="29" rx="1.6" fill="#fff" stroke="#111827" stroke-width="0.35"/>`;
+    content += `<rect x="4.5" y="14" width="29" height="29" rx="1.6" fill="${palette.qrBackground}" stroke="${palette.border}" stroke-width="0.35"/>`;
     content += `<image href="${qrDataUrl}" x="5.25" y="14.75" width="27.5" height="27.5"/>`;
 
     if (showContact) {
-      content += svgText(wrapText(contactLabel, 18, 2), width / 2, 47, {
+      content += svgText(wrapText(contactLabel, 18, 2), layoutWidth / 2, 47, {
         size: 2.15,
         weight: 750,
-        color: "#475467",
+        color: palette.muted,
         anchor: "middle",
         lineHeight: 2.5,
       });
@@ -761,7 +901,7 @@ function buildCardSvg(qrDataUrl: string): string {
   }
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}mm" height="${height}mm" viewBox="0 0 ${width} ${height}">
-  <rect x="0.225" y="0.225" width="${width - 0.45}" height="${height - 0.45}" rx="${radius}" fill="#fff" stroke="#111827" stroke-width="0.45"/>
+  <rect x="0.225" y="0.225" width="${width - 0.45}" height="${height - 0.45}" rx="${radius}" fill="${cardFill}" stroke="${palette.border}" stroke-width="0.45"/>
   <g transform="translate(${offsetX} ${offsetY}) scale(${contentScale})" font-family="Inter, Arial, sans-serif">
     <rect x="0" y="0" width="${layoutWidth}" height="${layoutHeight}" fill="transparent"/>
     ${content}
@@ -816,8 +956,10 @@ async function downloadPng(): Promise<void> {
       return;
     }
 
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    if (selectedBackgroundMode !== "transparent") {
+      context.fillStyle = getCurrentPalette().cardBackground;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+    }
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
     URL.revokeObjectURL(svgUrl);
     canvas.toBlob((blob) => {
@@ -902,11 +1044,14 @@ function resetForm(): void {
   copyCountInput.value = "1";
   showCutLinesInput.checked = false;
   safeMarginInput.checked = true;
+  selectedBackgroundMode = "solid";
+  selectedPalette = "light";
   customMetrics.wallet = { ...formatMetrics.wallet };
   customMetrics.keychain = { ...formatMetrics.keychain };
   customMetrics.compact = { ...formatMetrics.compact };
   contactTypeSelect.value = "email";
   setCardFormat("wallet");
+  applyAppearance();
   updateTextPreview();
   updateContactField();
   saveState();
@@ -948,6 +1093,18 @@ cardWidthInput.addEventListener("input", updateSelectedSizeFromInputs);
 cardHeightInput.addEventListener("input", updateSelectedSizeFromInputs);
 showCutLinesInput.addEventListener("change", saveState);
 safeMarginInput.addEventListener("change", saveState);
+backgroundModeSelect.addEventListener("change", () => {
+  selectedBackgroundMode = isBackgroundMode(backgroundModeSelect.value)
+    ? backgroundModeSelect.value
+    : "solid";
+  applyAppearance();
+  saveState();
+});
+paletteSelect.addEventListener("change", () => {
+  selectedPalette = isPaletteName(paletteSelect.value) ? paletteSelect.value : "light";
+  applyAppearance();
+  saveState();
+});
 languageSelect.addEventListener("change", () => {
   setLanguage(getSelectedLanguage());
 });
@@ -959,6 +1116,11 @@ formatTabs.forEach((tab) => {
       setCardFormat(format);
       saveState();
     }
+  });
+});
+viewTabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    setPreviewView(tab.dataset.view === "how-to" ? "how-to" : "preview");
   });
 });
 cardForm.addEventListener("submit", (event) => {

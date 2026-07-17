@@ -12,6 +12,8 @@ Use the app: https://itstomsh.github.io/am-i-lost/
 - Wallet Card, Keychain, and Compact formats
 - Custom title, label, message, and thank-you text
 - Resizable card dimensions in millimeters
+- Solid or transparent background
+- Palettes for light, dark, colored, or high-contrast materials
 - QR codes for email, phone, WhatsApp, or a website
 - Optional contact text below the QR code
 - Exact QR target preview
@@ -28,6 +30,30 @@ Use the app: https://itstomsh.github.io/am-i-lost/
 The contact value is encoded directly into the QR code. Anyone who scans the QR
 can see or open that contact target. The app does not send contact data to a
 server and does not use a database.
+
+## Using With Custom Items
+
+The generated PNG or SVG can be used beyond ordinary paper printing. You can
+upload the exported artwork to custom print services, sticker makers, or product
+marketplaces that offer blank/custom keychains, wallet cards, luggage tags, or
+similar items.
+
+Useful search terms:
+
+- `custom QR keychain`
+- `custom engraved keychain`
+- `custom wallet card`
+- `custom NFC QR card`
+- `blank plastic wallet cards`
+- `custom luggage tag`
+- `custom pet tag`
+
+For dark or metal materials, choose a palette with light text and a strong QR
+frame. For white cards or stickers, use the light palette. Use transparent
+background when the service already provides the material color and you only
+want to place the text and QR artwork on top.
+
+Always test the QR code with a phone before ordering custom items.
 
 ## Development
 
