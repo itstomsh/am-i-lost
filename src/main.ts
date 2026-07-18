@@ -238,11 +238,25 @@ function setCurrentMetrics(metrics: CardMetrics): void {
 
 function applyCardMetrics(): void {
   const metrics = getCurrentMetrics();
+  const base = formatMetrics[selectedFormat];
+  const contentScale = Math.min(
+    metrics.widthMm / base.widthMm,
+    metrics.heightMm / base.heightMm,
+  );
+
   cardWidthInput.value = formatMm(metrics.widthMm);
   cardHeightInput.value = formatMm(metrics.heightMm);
   printCardElement.style.setProperty("--card-width", `${metrics.widthMm}mm`);
   printCardElement.style.setProperty("--card-height", `${metrics.heightMm}mm`);
-  formatDescription.textContent = `${t().formatDescriptions[selectedFormat]} ${formatMm(metrics.widthMm)} x ${formatMm(metrics.heightMm)} mm.`;
+  printCardElement.style.setProperty("--content-scale", String(contentScale));
+
+  const isCustomSize =
+    metrics.widthMm !== base.widthMm || metrics.heightMm !== base.heightMm;
+  const description = t().formatDescriptions[selectedFormat];
+
+  formatDescription.textContent = isCustomSize
+    ? `${description} ${t().customSizeLabel}: ${formatMm(metrics.widthMm)} x ${formatMm(metrics.heightMm)} mm.`
+    : description;
 }
 
 function getCurrentPalette(): Palette {
@@ -760,10 +774,6 @@ async function getQrDataUrlForExport(): Promise<string | null> {
     formError.textContent = t().downloadNeedsQr;
     contactInput.focus();
     return null;
-  }
-
-  if (qrImage.src) {
-    return qrImage.src;
   }
 
   return QRCode.toDataURL(target, {

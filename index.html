@@ -317,30 +317,32 @@
             <article
               id="print-card"
               class="lost-card format-wallet"
-              style="--card-width: 85.6mm; --card-height: 54mm; --card-bg: #ffffff; --card-text: #111827; --card-muted: #475467; --card-accent: #1d4ed8; --card-border: #101828; --qr-bg: #ffffff"
+              style="--card-width: 85.6mm; --card-height: 54mm; --content-scale: 1; --card-bg: #ffffff; --card-text: #111827; --card-muted: #475467; --card-accent: #1d4ed8; --card-border: #101828; --qr-bg: #ffffff"
               aria-label="Card preview"
               data-i18n-aria-label="previewCardAria"
             >
-              <div class="card-copy">
-                <p id="preview-kicker" class="card-kicker">FOUND ITEM</p>
-                <h3 id="preview-title">AM I LOST?</h3>
-                <p id="preview-message" class="card-message">
-                  Found my item? Please contact me.
-                </p>
-                <p id="preview-footer" class="card-footer">
-                  Thank you for helping!
-                </p>
-              </div>
-
-              <div class="qr-area">
-                <div class="qr-frame">
-                  <img id="qr-image" alt="Contact QR code" hidden />
-                  <div id="qr-placeholder" class="qr-placeholder">
-                    Enter contact
-                  </div>
+              <div class="card-content">
+                <div class="card-copy">
+                  <p id="preview-kicker" class="card-kicker">FOUND ITEM</p>
+                  <h3 id="preview-title">AM I LOST?</h3>
+                  <p id="preview-message" class="card-message">
+                    Found my item? Please contact me.
+                  </p>
+                  <p id="preview-footer" class="card-footer">
+                    Thank you for helping!
+                  </p>
                 </div>
-                <p data-i18n="scanMe">SCAN ME</p>
-                <p id="preview-qr-context" class="qr-context" hidden></p>
+
+                <div class="qr-area">
+                  <div class="qr-frame">
+                    <img id="qr-image" alt="Contact QR code" hidden />
+                    <div id="qr-placeholder" class="qr-placeholder">
+                      Enter contact
+                    </div>
+                  </div>
+                  <p data-i18n="scanMe">SCAN ME</p>
+                  <p id="preview-qr-context" class="qr-context" hidden></p>
+                </div>
               </div>
             </article>
           </div>

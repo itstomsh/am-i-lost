@@ -409,8 +409,9 @@ select:focus {
 .lost-card {
   width: var(--card-width);
   height: var(--card-height);
-  display: grid;
+  display: flex;
   align-items: center;
+  justify-content: center;
   border: 0.45mm solid var(--card-border, #101828);
   color: var(--card-text, #111827);
   background: var(--card-bg, #ffffff);
@@ -418,26 +419,48 @@ select:focus {
   overflow: hidden;
 }
 
+.card-content {
+  display: grid;
+  align-items: center;
+  flex: 0 0 auto;
+  transform: scale(var(--content-scale, 1));
+}
+
 .format-wallet {
-  grid-template-columns: minmax(0, 1fr) 31mm;
-  gap: 4mm;
-  padding: 5mm;
   border-radius: 3.2mm;
 }
 
 .format-keychain {
-  grid-template-columns: minmax(0, 1fr) 18mm;
-  gap: 2.2mm;
-  padding: 3mm;
   border-radius: 8mm;
 }
 
 .format-compact {
+  border-radius: 3mm;
+}
+
+.format-wallet .card-content {
+  width: 85.6mm;
+  height: 54mm;
+  grid-template-columns: minmax(0, 1fr) 31mm;
+  gap: 4mm;
+  padding: 5mm;
+}
+
+.format-keychain .card-content {
+  width: 45mm;
+  height: 32mm;
+  grid-template-columns: minmax(0, 1fr) 18mm;
+  gap: 2.2mm;
+  padding: 3mm;
+}
+
+.format-compact .card-content {
+  width: 38mm;
+  height: 50mm;
   grid-template-columns: 1fr;
   justify-items: center;
   gap: 2.5mm;
   padding: 4mm;
-  border-radius: 3mm;
 }
 
 .card-copy {
