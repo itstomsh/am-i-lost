@@ -311,13 +311,18 @@
                 <option value="contrast">High contrast</option>
               </select>
             </label>
+
+            <label class="check-field">
+              <input id="show-border" name="show-border" type="checkbox" checked />
+              <span data-i18n="showBorderLabel">Show card border</span>
+            </label>
           </div>
 
           <div class="card-stage">
             <article
               id="print-card"
               class="lost-card format-wallet"
-              style="--card-width: 85.6mm; --card-height: 54mm; --content-scale: 1; --card-bg: #ffffff; --card-text: #111827; --card-muted: #475467; --card-accent: #1d4ed8; --card-border: #101828; --qr-bg: #ffffff"
+              style="--card-width: 85.6mm; --card-height: 54mm; --content-scale: 1; --card-border-width: 0.45mm; --card-bg: #ffffff; --card-text: #111827; --card-muted: #475467; --card-accent: #1d4ed8; --card-border: #101828; --qr-bg: #ffffff"
               aria-label="Card preview"
               data-i18n-aria-label="previewCardAria"
             >

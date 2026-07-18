@@ -239,6 +239,7 @@ select:focus {
 }
 
 .print-options .check-field,
+.appearance-options .check-field,
 .print-options button,
 .size-options button {
   min-height: 46px;
@@ -412,7 +413,9 @@ select:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 0.45mm solid var(--card-border, #101828);
+  border-style: solid;
+  border-width: var(--card-border-width, 0.45mm);
+  border-color: var(--card-border, #101828);
   color: var(--card-text, #111827);
   background: var(--card-bg, #ffffff);
   box-shadow: 0 20px 45px rgba(16, 24, 40, 0.22);

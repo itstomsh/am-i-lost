@@ -26,6 +26,7 @@ type StoredState = {
   copyCount?: number;
   showCutLines?: boolean;
   safeMargin?: boolean;
+  showBorder?: boolean;
   backgroundMode?: BackgroundMode;
   palette?: PaletteName;
   customMetrics?: Partial<Record<CardFormat, CardMetrics>>;
@@ -81,6 +82,7 @@ const cardWidthInput = getElement<HTMLInputElement>("card-width");
 const cardHeightInput = getElement<HTMLInputElement>("card-height");
 const backgroundModeSelect = getElement<HTMLSelectElement>("background-mode");
 const paletteSelect = getElement<HTMLSelectElement>("card-palette");
+const showBorderInput = getElement<HTMLInputElement>("show-border");
 const copyCountInput = getElement<HTMLInputElement>("copy-count");
 const showCutLinesInput = getElement<HTMLInputElement>("show-cut-lines");
 const safeMarginInput = getElement<HTMLInputElement>("safe-margin");
@@ -273,6 +275,10 @@ function applyAppearance(): void {
   printCardElement.style.setProperty("--card-muted", palette.muted);
   printCardElement.style.setProperty("--card-accent", palette.accent);
   printCardElement.style.setProperty("--card-border", palette.border);
+  printCardElement.style.setProperty(
+    "--card-border-width",
+    showBorderInput.checked ? "0.45mm" : "0",
+  );
   printCardElement.style.setProperty("--qr-bg", palette.qrBackground);
   backgroundModeSelect.value = selectedBackgroundMode;
   paletteSelect.value = selectedPalette;
@@ -564,6 +570,7 @@ function saveState(): void {
     copyCount: getCopyCount(),
     showCutLines: showCutLinesInput.checked,
     safeMargin: safeMarginInput.checked,
+    showBorder: showBorderInput.checked,
     backgroundMode: selectedBackgroundMode,
     palette: selectedPalette,
     customMetrics,
@@ -636,6 +643,10 @@ function loadState(): void {
 
   if (typeof state.safeMargin === "boolean") {
     safeMarginInput.checked = state.safeMargin;
+  }
+
+  if (typeof state.showBorder === "boolean") {
+    showBorderInput.checked = state.showBorder;
   }
 
   if (state.backgroundMode && isBackgroundMode(state.backgroundMode)) {
@@ -910,8 +921,11 @@ function buildCardSvg(qrDataUrl: string): string {
     }
   }
 
+  const borderWidth = showBorderInput.checked ? 0.45 : 0;
+  const borderInset = borderWidth / 2;
+
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}mm" height="${height}mm" viewBox="0 0 ${width} ${height}">
-  <rect x="0.225" y="0.225" width="${width - 0.45}" height="${height - 0.45}" rx="${radius}" fill="${cardFill}" stroke="${palette.border}" stroke-width="0.45"/>
+  <rect x="${borderInset}" y="${borderInset}" width="${width - borderWidth}" height="${height - borderWidth}" rx="${radius}" fill="${cardFill}" stroke="${palette.border}" stroke-width="${borderWidth}"/>
   <g transform="translate(${offsetX} ${offsetY}) scale(${contentScale})" font-family="Inter, Arial, sans-serif">
     <rect x="0" y="0" width="${layoutWidth}" height="${layoutHeight}" fill="transparent"/>
     ${content}
@@ -1054,6 +1068,7 @@ function resetForm(): void {
   copyCountInput.value = "1";
   showCutLinesInput.checked = false;
   safeMarginInput.checked = true;
+  showBorderInput.checked = true;
   selectedBackgroundMode = "solid";
   selectedPalette = "light";
   customMetrics.wallet = { ...formatMetrics.wallet };
@@ -1103,6 +1118,10 @@ cardWidthInput.addEventListener("input", updateSelectedSizeFromInputs);
 cardHeightInput.addEventListener("input", updateSelectedSizeFromInputs);
 showCutLinesInput.addEventListener("change", saveState);
 safeMarginInput.addEventListener("change", saveState);
+showBorderInput.addEventListener("change", () => {
+  applyAppearance();
+  saveState();
+});
 backgroundModeSelect.addEventListener("change", () => {
   selectedBackgroundMode = isBackgroundMode(backgroundModeSelect.value)
     ? backgroundModeSelect.value
