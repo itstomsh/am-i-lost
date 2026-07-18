@@ -107,13 +107,7 @@ The GitHub link in `index.html` points to:
 href="https://github.com/YOUR_USERNAME/am-i-lost"
 ```
 
-This repository is currently configured for:
-
-```text
-https://itstomsh.github.io/am-i-lost/
-https://github.com/itstomsh/am-i-lost
-```
-
 ## License
 
-MIT. See `LICENSE`.
+[MIT](LICENSE)
+
